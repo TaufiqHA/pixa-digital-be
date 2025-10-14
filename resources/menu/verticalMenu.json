@@ -26,6 +26,18 @@
       ]
     },
     {
+      "name": "Jackett Search",
+      "icon": "menu-icon icon-base bx bx-search-alt",
+      "slug": "jackett",
+      "submenu": [
+        {
+          "url": "jackett",
+          "name": "Movie",
+          "slug": "jackett.index"
+        }
+      ]
+    },
+    {
       "name": "Layouts",
       "icon": "menu-icon icon-base bx bx-layout",
       "slug": "layouts",
