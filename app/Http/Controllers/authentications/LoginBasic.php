@@ -23,6 +23,15 @@ class LoginBasic extends Controller
     if (Auth::attempt($credentials)) {
       $request->session()->regenerate();
 
+      if(!Auth::user()->is_admin)
+      {
+        Auth::logout();
+
+        return back()->withErrors([
+          'email' => 'You do not have admin access.',
+        ])->withInput($request->only('email'));
+      }
+
       return redirect()->intended('/');
     }
 
