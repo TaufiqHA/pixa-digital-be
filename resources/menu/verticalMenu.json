@@ -34,6 +34,11 @@
           "url": "jackett",
           "name": "Movie",
           "slug": "jackett.index"
+        },
+        {
+          "url": "qbittorrent",
+          "name": "Download Info",
+          "slug": "qbittorrent.downloadInfo"
         }
       ]
     },

@@ -74,7 +74,14 @@
               </td>
               <td>{{ $result['size'] }}</td>
               <td>
-                <a href="#" class="btn btn-success">send to qbittorrent</a>
+                <form action="{{ route('jackett.add') }}" method="POST" style="display:inline;">
+                  @csrf
+                  <input type="hidden" name="magnet_uri" value="{{ $result['link'] ?? '' }}">
+                  <input type="hidden" name="name" value="{{ $result['title'] }}">
+                  <input type="hidden" name="size" value="{{ $result['size'] }}">
+                  <input type="hidden" name="status" value="queued">
+                  <button type="submit" class="btn btn-success">send to qbittorrent</button>
+                </form>
               </td>
             </tr>
           @endforeach

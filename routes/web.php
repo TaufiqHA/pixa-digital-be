@@ -123,3 +123,4 @@ Route::put('/users/{user}', [UserController::class, 'update'])->name('users.upda
 Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
 require __DIR__ . '/jackett.php';
+require __DIR__ . '/qbittorrent.php';
