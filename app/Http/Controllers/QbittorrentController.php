@@ -9,10 +9,17 @@ use Illuminate\Support\Facades\Http;
 
 class QbittorrentController extends Controller
 {
-    protected $baseUrl = 'http://127.0.0.1:8080'; // Ganti sesuai host qBittorrent kamu
-    protected $username = 'admin';
-    protected $password = 'malakaji';
+    protected $baseUrl;
+    protected $username;
+    protected $password;
     protected $cookie;
+
+    public function __construct()
+    {
+        $this->baseUrl = env('QBITTORRENT_URL', 'http://127.0.0.1:8080');
+        $this->username = env('QBITTORRENT_USERNAME', 'admin');
+        $this->password = env('QBITTORRENT_PASSWORD', 'malakaji');
+    }
 
     public function index()
     {
