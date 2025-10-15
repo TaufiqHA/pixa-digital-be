@@ -38,7 +38,7 @@
         {
           "url": "qbittorrent",
           "name": "Download Info",
-          "slug": "qbittorrent.downloadInfo"
+          "slug": "jackett.downloadInfo"
         }
       ]
     },
