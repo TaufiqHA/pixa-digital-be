@@ -6,6 +6,7 @@ use App\Models\Content;
 use App\Models\Torrent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Validator;
 
 class QbittorrentController extends Controller
 {
@@ -45,6 +46,8 @@ class QbittorrentController extends Controller
         }
 
         $torrents = $response->json();
+
+        dd($torrents);
 
         return $torrents;
     }
@@ -205,5 +208,52 @@ class QbittorrentController extends Controller
         return redirect()->route('jackett.downloadInfo')->with('success', 'Torrent berhasil di-resume.');
     }
 
+    public function convert(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'hash' => 'required|string',
+        ]);
 
+        if ($validator->fails())
+        {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $validated = $validator->validate();
+
+        // Step 1: Login
+        $login = Http::asForm()->post("{$this->baseUrl}/api/v2/auth/login", [
+            'username' => $this->username,
+            'password' => $this->password,
+        ]);
+
+        if ($login->body() !== 'Ok.') {
+            return view('jackett.download', ['error' => 'Login gagal ke qBittorrent: ' . $login->body(), 'torrents' => []]);
+        }
+
+        $sid = $login->cookies()->getCookieByName('SID')->getValue();
+
+        $response = Http::withHeaders([
+            'Cookie' => 'SID=' . $sid,
+        ])->get("{$this->baseUrl}/api/v2/torrents/info");
+
+        // ✅ Decode JSON ke array
+        $torrents = json_decode($response->body(), true);
+
+        // ✅ Filter berdasarkan hash yang dikirim user
+        $torrent = collect($torrents)->firstWhere('hash', $validated['hash']);
+
+        if (! $torrent) {
+            return back()->with('error', 'Torrent dengan hash tersebut tidak ditemukan.');
+        }
+
+        $dataTorrent = Torrent::where('name', $torrent['name'])->first();
+
+        $dataTorrent->update([
+            'status' => 'converting',
+            'hash' => $torrent['hash'],
+        ]);
+
+        return back()->with('success', 'Proses convert dimulai. Silakan cek halaman utama untuk statusnya.');
+    }
 }

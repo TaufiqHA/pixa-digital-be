@@ -65,6 +65,13 @@
                         <i class="icon-base bx bx-play me-1"></i>Resume
                       </button>
                     </form>
+                    <form action="{{ route('qbittorrent.convert') }}" method="POST" class="action-form">
+                      @csrf
+                      <input type="hidden" name="hash" value="{{ $torrent['hash'] }}">
+                      <button type="submit" class="dropdown-item">
+                        <i class="icon-base bx bx-repeat me-1"></i>Convert
+                      </button>
+                    </form>
                   </div>
                 </div>
               </td>
@@ -94,38 +101,6 @@
           alertElement.style.display = 'none';
         }, 5000);
       }
-
-      // Handle form submissions for pause/resume
-      // document.querySelectorAll('.action-form').forEach(form => {
-      //   form.addEventListener('submit', function(e) {
-      //     e.preventDefault();
-
-      //     const formData = new FormData(this);
-      //     const action = this.getAttribute('action');
-
-      //     fetch(action, {
-      //       method: 'POST',
-      //       body: formData,
-      //       headers: {
-      //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-      //       }
-      //     })
-      //     .then(response => response.json())
-      //     .then(data => {
-      //       if (data.success) {
-      //         showAlert('success', data.message || 'Operation completed successfully');
-      //         // Refresh torrent list after successful action
-      //         updateTorrents();
-      //       } else {
-      //         showAlert('error', data.message || 'An error occurred');
-      //       }
-      //     })
-      //     .catch(error => {
-      //       console.error('Error:', error);
-      //       showAlert('error', 'An error occurred while processing your request');
-      //     });
-      //   });
-      // });
 
       function updateTorrents() {
         fetch("{{ route('qbittorrent.refresh') }}")

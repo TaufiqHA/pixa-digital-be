@@ -8,3 +8,5 @@ Route::post('/qbittorrent/add', [QbittorrentController::class, 'add'])->name('qb
 Route::get('/qbittorrent/refresh', [QbittorrentController::class, 'refresh'])->name('qbittorrent.refresh');
 Route::post('qbittorrent/pause', [QbittorrentController::class, 'pause'])->name('qbittorrent.pause');
 Route::post('/qbittorrent/resume', [QbittorrentController::class, 'resume'])->name('qbittorrent.resume');
+Route::get('/qbittorrent/index', [QbittorrentController::class, 'index'])->name('qbittorrent.index');
+Route::post('/qbittorrent/convert', [QbittorrentController::class,'convert'])->name('qbittorrent.convert');
