@@ -20,9 +20,8 @@ return new class extends Migration
             $table->integer('release_year')->nullable();
             $table->decimal('rating', 3, 1)->nullable();
             $table->integer('duration')->nullable();
-            $table->string('file_path', 255)->nullable();
             $table->string('cover_image', 255)->nullable();
-            $table->string('status', 50)->default('downloading');
+            $table->string('status', 50)->nullable();
             $table->timestamps();
         });
     }

@@ -16,7 +16,6 @@ return new class extends Migration
             $table->foreignId('content_id')->constrained('contents')->onDelete('cascade');
             $table->string('hash', 100);
             $table->string('name', 255);
-            $table->decimal('progress', 5, 2)->default(0);
             $table->string('size')->default(0);
             $table->string('download_path', 255)->nullable();
             $table->string('status', 50)->default('queued'); // queued, downloading, completed

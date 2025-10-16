@@ -10,3 +10,6 @@ Route::post('qbittorrent/pause', [QbittorrentController::class, 'pause'])->name(
 Route::post('/qbittorrent/resume', [QbittorrentController::class, 'resume'])->name('qbittorrent.resume');
 Route::get('/qbittorrent/index', [QbittorrentController::class, 'index'])->name('qbittorrent.index');
 Route::post('/qbittorrent/convert', [QbittorrentController::class,'convert'])->name('qbittorrent.convert');
+
+// get file info
+Route::get('/qbittorrent/fileinfo/{folderName}', [QbittorrentController::class, 'getMainFilePath'])->name('qbittorrent.fileinfo');

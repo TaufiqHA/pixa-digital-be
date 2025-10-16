@@ -18,7 +18,7 @@ class JackettController extends Controller
     public function search(Request $request)
     {
         $query = $request->input('query');
-        $jackettUrl = 'http://localhost:9117/api/v2.0/indexers/all/results/torznab';
+        $jackettUrl = 'http://localhost:9117/api/v2.0/indexers/animetosho/results/torznab';
         $apiKey = 'qx3u290g3d8e6c7bsazxr0hkolkk19p0';
         $results = [];
 
@@ -34,12 +34,10 @@ class JackettController extends Controller
 
         $data = $validator->validate();
 
-        $content = Content::updateOrCreate([
-            'name' => $data['query'],
-            'type' => $data['type']
-        ]);
+        session(['query' => $data['query']]);
+        session(['type' => $data['type']]);
 
-        session(['content_id' => $content->id]);
+        // session(['content_id' => $content->id]);
 
         try {
             $response = Http::get($jackettUrl, [
@@ -107,12 +105,16 @@ class JackettController extends Controller
 
         $validated = $validator->validate();
 
+        $content = Content::updateOrCreate([
+            'name' => session('query'),
+            'type' => session('type')
+        ]);
+
         $torrent = Torrent::create([
-            'content_id'    => session('content_id'),
+            'content_id'    => $content->id,
             'hash'          => "",
             'name'          => $validated['name'],
             'size'          => $validated['size'] ?? 0,
-            'progress'      => 0,
             'status'        => $validated['status'],
         ]);
 
