@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Content;
 use App\Models\Torrent;
-use App\Services\RadarrService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;

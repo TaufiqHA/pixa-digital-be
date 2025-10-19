@@ -21,6 +21,8 @@ return new class extends Migration
             $table->decimal('rating', 3, 1)->nullable();
             $table->integer('duration')->nullable();
             $table->string('cover_image', 255)->nullable();
+            $table->string('file_path', 255)->nullable();
+            $table->string('full_path', 255)->nullable();
             $table->string('status', 50)->nullable();
             $table->timestamps();
         });

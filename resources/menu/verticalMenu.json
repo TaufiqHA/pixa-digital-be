@@ -26,7 +26,7 @@
       ]
     },
     {
-      "name": "Jackett Search",
+      "name": "Content Management",
       "icon": "menu-icon icon-base bx bx-search-alt",
       "slug": "jackett",
       "submenu": [

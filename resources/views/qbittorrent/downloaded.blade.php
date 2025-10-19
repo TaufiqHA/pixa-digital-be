@@ -17,7 +17,7 @@
   </div>
 
   <div class="card">
-    <h5 class="card-header">Downloaded Torrents</h5>
+    <h5 class="card-header">Downloaded Movie</h5>
     <div class="table-responsive text-nowrap">
       <table class="table" id="torrentTable">
         <thead>
@@ -28,28 +28,30 @@
           </tr>
         </thead>
         <tbody class="table-border-bottom-0" id="torrentBody">
-          @foreach ($torrents as $torrent)
-            <tr data-hash="{{ $torrent['hash'] }}">
-              <td>{{ $torrent['name'] }}</td>
+          @foreach ($contents as $content)
+            <tr data-id="{{ $content['id'] }}">
+              <td>{{ $content['name'] }}</td>
               <td>
-                <span class="badge bg-label-primary me-1">{{ $torrent['state'] }}</span>
+                <span class="badge bg-label-primary me-1">{{ $content['status'] }}</span>
               </td>
-              <td>
-                <div class="dropdown">
-                  <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                    <i class="icon-base bx bx-dots-vertical-rounded"></i>
-                  </button>
-                  <div class="dropdown-menu">
-                    <form action="{{ route('convert') }}" method="POST" class="action-form">
-                      @csrf
-                      <input type="hidden" name="hash" value="{{ $torrent['hash'] }}">
-                      <button type="submit" class="dropdown-item">
-                        <i class="icon-base bx bx-repeat me-1"></i>Convert
-                      </button>
-                    </form>
+              @if ($content['status'] == 'converting')
+                <td>
+                  <div class="dropdown">
+                    <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                      <i class="icon-base bx bx-dots-vertical-rounded"></i>
+                    </button>
+                    <div class="dropdown-menu">
+                      <form action="{{ route('convert') }}" method="POST" class="action-form">
+                        @csrf
+                        <input type="hidden" name="id" value="{{ $content['id'] }}">
+                        <button type="submit" class="dropdown-item">
+                          <i class="icon-base bx bx-repeat me-1"></i>Convert
+                        </button>
+                      </form>
+                    </div>
                   </div>
-                </div>
-              </td>
+                </td>
+              @endif
             </tr>
           @endforeach
         </tbody>

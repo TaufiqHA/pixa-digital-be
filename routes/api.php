@@ -8,7 +8,7 @@ use App\Http\Controllers\StreamController;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::get('/stream/{hash}/{file?}', [StreamController::class, 'stream'])
+Route::get('/stream/{name}/{file?}', [StreamController::class, 'stream'])
     ->where('file', '.*');
 
 

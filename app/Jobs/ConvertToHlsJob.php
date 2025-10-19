@@ -16,19 +16,21 @@ class ConvertToHlsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $timeout = 3600;
+    public $timeout = 7200; // 2 jam
+    public $tries = 1;      // hanya 1x percobaan
+    public $failOnTimeout = false; // biar gak dilempar exception otomatis
 
-    protected $torrent;
+    protected $content;
 
-    public function __construct(Torrent $torrent)
+    public function __construct(Content $content)
     {
-        $this->torrent = $torrent;
+        $this->content = $content;
     }
 
     public function handle()
     {
-        $inputPath = $this->torrent->download_path;
-        $outputFolder = $this->torrent->hash;
+        $inputPath = $this->content->full_path;
+        $outputFolder = $this->content->name;
 
         if (!file_exists($inputPath)) {
             Log::error("❌ File tidak ditemukan: {$inputPath}");
@@ -36,48 +38,65 @@ class ConvertToHlsJob implements ShouldQueue
         }
 
         $outputPath = storage_path("app/public/hls/{$outputFolder}");
+        if (!file_exists($outputPath)) mkdir($outputPath, 0777, true);
 
-        if (!file_exists($outputPath)) {
-            mkdir($outputPath, 0777, true);
-        }
-
-        // Jalankan ffmpeg command langsung (lebih stabil untuk HLS)
         $cmd = sprintf(
-            'ffmpeg -i "%s" -profile:v baseline -level 3.0 -start_number 0 -hls_time 10 -hls_list_size 0 -f hls "%s/index.m3u8"',
+            'ffmpeg -y -i "%s" -profile:v baseline -level 3.0 -start_number 0 -hls_time 10 -hls_list_size 0 -f hls "%s/index.m3u8"',
             $inputPath,
             $outputPath
         );
 
-        // $content = Content::where('id', $this->torrent->content_id)->first();
+        $descriptorspec = [
+            0 => ["pipe", "r"],   // stdin
+            1 => ["pipe", "w"],   // stdout
+            2 => ["pipe", "w"],   // stderr
+        ];
 
-        // $omdb = new OmdbController();
+        $process = proc_open($cmd, $descriptorspec, $pipes);
 
-        // $omdbData = $omdb->search($content->name);
+        if (is_resource($process)) {
+            fclose($pipes[0]);
+            stream_set_blocking($pipes[1], false);
+            stream_set_blocking($pipes[2], false);
 
-        // $content->update([
-        //     'name' => $omdbData['Title'] ?? $content->name,
-        //     'title' => $omdbData['Title'] ?? $content->title,
-        //     'description' => $omdbData['Plot'] ?? $content->description,
-        //     'release_year' => isset($omdbData['Year']) ? (int)$omdbData['Year'] : $content->release_year,
-        //     'rating' => isset($omdbData['imdbRating']) && is_numeric($omdbData['imdbRating']) ? (float)$omdbData['imdbRating'] : $content->rating,
-        //     'duration' => $omdbData['Runtime'] ?? $content->duration,
-        //     'cover_image' => $omdbData['Poster'] ?? $content->cover_image,
-        //     'status' => 'available'
-        // ]);
+            $start = time();
+            $maxDuration = 7200; // 2 jam
 
-        exec($cmd, $output, $returnVar);
+            while (true) {
+                $status = proc_get_status($process);
+                $stdout = stream_get_contents($pipes[1]);
+                $stderr = stream_get_contents($pipes[2]);
 
-        if ($returnVar !== 0) {
-            Log::error("❌ Konversi HLS gagal untuk: {$inputPath}", $output);
-            return;
+                if ($stdout) Log::debug("FFmpeg out: " . trim($stdout));
+                if ($stderr) Log::debug("FFmpeg err: " . trim($stderr));
+
+                if (!$status['running']) break;
+
+                if (time() - $start > $maxDuration) {
+                    Log::warning("⚠️ Konversi terlalu lama, dihentikan paksa.");
+                    proc_terminate($process);
+                    break;
+                }
+
+                sleep(5);
+            }
+
+            fclose($pipes[1]);
+            fclose($pipes[2]);
+            $exitCode = proc_close($process);
+
+            if ($exitCode !== 0) {
+                Log::error("❌ Konversi HLS gagal untuk: {$inputPath}");
+                return;
+            }
         }
 
-        // Update database status + path hasil
-        $this->torrent->update([
+        $this->content->update([
             'status' => 'converted',
-            'download_path' => str_replace(storage_path('app/public/'), 'storage/', "{$outputPath}/index.m3u8"),
+            'file_path' => str_replace(storage_path('app/public/'), 'storage/', "{$outputPath}/index.m3u8"),
         ]);
 
         Log::info("✅ Konversi HLS berhasil untuk: {$inputPath}");
     }
+
 }

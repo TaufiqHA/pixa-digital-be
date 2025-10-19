@@ -126,28 +126,9 @@ class QbittorrentController extends Controller
 
     public function downloadedTorrent()
     {
-        // Step 1: Login
-        $login = Http::asForm()->post("{$this->baseUrl}/api/v2/auth/login", [
-            'username' => $this->username,
-            'password' => $this->password,
-        ]);
+        $contents = Content::whereIn('status', ['converted', 'converting'])->get();
 
-        if ($login->body() !== 'Ok.') {
-            return view('jackett.download', ['error' => 'Login gagal ke qBittorrent: ' . $login->body(), 'torrents' => []]);
-        }
-
-        $sid = $login->cookies()->getCookieByName('SID')->getValue();
-
-        // Step 2: Panggil /api/v2/torrents/info untuk download yang sedang berlangsung
-        $response = Http::withHeaders([
-            'Cookie' => 'SID=' . $sid,
-        ])->get("{$this->baseUrl}/api/v2/torrents/info", [
-            'filter' => 'completed',
-        ]);
-
-        $torrents = $response->json();
-
-        return view('qbittorrent.downloaded', ['torrents' => $torrents, 'error' => null]);
+        return view('qbittorrent.downloaded', ['contents' => $contents, 'error' => null]);
     }
 
     public function refresh()

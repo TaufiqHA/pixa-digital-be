@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Response;
 
 class StreamController extends Controller
 {
-    public function stream($hash, $file = 'index.m3u8')
+    public function stream($name, $file = 'index.m3u8')
     {
-        $path = storage_path("app/public/hls/{$hash}/{$file}");
+        $path = storage_path("app/public/hls/{$name}/{$file}");
 
         if (!file_exists($path)) {
             return response()->json(['error' => 'File not found'], 404);

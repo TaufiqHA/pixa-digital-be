@@ -16,7 +16,7 @@
   <script>
     document.addEventListener("DOMContentLoaded", function() {
       const video = document.getElementById("video");
-      const videoSrc = "{{ asset('storage/hls/182b1965adf9dcd3cdae27c68de9e810cef75346/index.m3u8') }}";
+      const videoSrc = "{{ asset('storage/hls/3/index.m3u8') }}";
 
       if (Hls.isSupported()) {
         const hls = new Hls({
