@@ -132,3 +132,4 @@ Route::get('/omdb/search/{title}', [OmdbController::class, 'search'])->name('omd
 
 require __DIR__ . '/jackett.php';
 require __DIR__ . '/qbittorrent.php';
+require __DIR__ . '/convert.php';

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Content;
 use App\Models\Torrent;
+use App\Services\RadarrService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
@@ -18,7 +19,7 @@ class JackettController extends Controller
     public function search(Request $request)
     {
         $query = $request->input('query');
-        $jackettUrl = 'http://localhost:9117/api/v2.0/indexers/animetosho/results/torznab';
+        $jackettUrl = 'http://localhost:9117/api/v2.0/indexers/all/results/torznab';
         $apiKey = 'qx3u290g3d8e6c7bsazxr0hkolkk19p0';
         $results = [];
 
@@ -44,6 +45,7 @@ class JackettController extends Controller
                 'apikey' => $apiKey,
                 't' => 'search',
                 'q' => $query,
+                'cat' => '2000,2020,2030,2040'
             ]);
 
             if ($response->failed()) {
@@ -56,14 +58,22 @@ class JackettController extends Controller
                 $results[] = [
                     'title' => (string) $item->title,
                     'link' => (string) $item->link,
-                    'size' => isset($item->size) ? $this->formatBytes((int) $item->size) : null,
+                    'size' => isset($item->size) ? (int) $item->size : 0,
                 ];
             }
+
         } catch (\Exception $e) {
             return back()->withErrors(['Terjadi kesalahan: ' . $e->getMessage()]);
         }
 
-        // dd($results);
+        $results = collect($results)
+        ->sortByDesc('size')
+        ->map(function ($item) {
+            $item['size'] = $this->formatBytes($item['size']);
+                return $item;
+            })
+        ->values() // reset indeks
+        ->toArray();
         
         return view('jackett.index', [
             'results' => $results,

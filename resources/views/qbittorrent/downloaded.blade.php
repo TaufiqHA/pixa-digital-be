@@ -17,13 +17,12 @@
   </div>
 
   <div class="card">
-    <h5 class="card-header">Download Progress</h5>
+    <h5 class="card-header">Downloaded Torrents</h5>
     <div class="table-responsive text-nowrap">
       <table class="table" id="torrentTable">
         <thead>
           <tr>
             <th>Name</th>
-            <th>Progress</th>
             <th>Status</th>
             <th>Action</th>
           </tr>
@@ -33,16 +32,6 @@
             <tr data-hash="{{ $torrent['hash'] }}">
               <td>{{ $torrent['name'] }}</td>
               <td>
-                <div class="progress" style="height: 16px;">
-                  <div class="progress-bar" role="progressbar"
-                    style="width: {{ number_format($torrent['progress'] * 100, 1) }}%;"
-                    aria-valuenow="{{ number_format($torrent['progress'] * 100, 1) }}" aria-valuemin="0"
-                    aria-valuemax="100">
-                    {{ number_format($torrent['progress'] * 100, 1) }}%
-                  </div>
-                </div>
-              </td>
-              <td>
                 <span class="badge bg-label-primary me-1">{{ $torrent['state'] }}</span>
               </td>
               <td>
@@ -51,18 +40,11 @@
                     <i class="icon-base bx bx-dots-vertical-rounded"></i>
                   </button>
                   <div class="dropdown-menu">
-                    <form action="{{ route('qbittorrent.pause') }}" method="POST" class="action-form">
+                    <form action="{{ route('convert') }}" method="POST" class="action-form">
                       @csrf
                       <input type="hidden" name="hash" value="{{ $torrent['hash'] }}">
                       <button type="submit" class="dropdown-item">
-                        <i class="icon-base bx bx-pause me-1"></i>Pause
-                      </button>
-                    </form>
-                    <form action="{{ route('qbittorrent.resume') }}" method="POST" class="action-form">
-                      @csrf
-                      <input type="hidden" name="hash" value="{{ $torrent['hash'] }}">
-                      <button type="submit" class="dropdown-item">
-                        <i class="icon-base bx bx-play me-1"></i>Resume
+                        <i class="icon-base bx bx-repeat me-1"></i>Convert
                       </button>
                     </form>
                   </div>
@@ -75,7 +57,7 @@
     </div>
   </div>
 
-  <script>
+  {{-- <script>
     document.addEventListener("DOMContentLoaded", function() {
       // Show alert notification
       function showAlert(type, message) {
@@ -133,5 +115,5 @@
       updateTorrents();
       setInterval(updateTorrents, 3000);
     });
-  </script>
+  </script> --}}
 @endsection

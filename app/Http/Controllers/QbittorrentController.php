@@ -40,7 +40,9 @@ class QbittorrentController extends Controller
         // Step 2: Panggil /api/v2/torrents/info
         $response = Http::withHeaders([
             'Cookie' => 'SID=' . $sid,
-        ])->get("{$this->baseUrl}/api/v2/torrents/info");
+        ])->get("{$this->baseUrl}/api/v2/torrents/info", [
+            'filter' => 'downloading',
+        ]);
 
         if (!$response->successful()) {
             return response()->json(['error' => 'Gagal mengambil data torrent'], 500);
@@ -109,7 +111,9 @@ class QbittorrentController extends Controller
         // Step 2: Panggil /api/v2/torrents/info untuk download yang sedang berlangsung
         $response = Http::withHeaders([
             'Cookie' => 'SID=' . $sid,
-        ])->get("{$this->baseUrl}/api/v2/torrents/info");
+        ])->get("{$this->baseUrl}/api/v2/torrents/info", [
+            'filter' => 'downloading',
+        ]);
 
         if (!$response->successful()) {
             return view('jackett.download', ['error' => 'Gagal mengambil data torrent', 'torrents' => []]);
@@ -118,6 +122,32 @@ class QbittorrentController extends Controller
         $torrents = $response->json();
 
         return view('qbittorrent.index', ['torrents' => $torrents, 'error' => null]);
+    }
+
+    public function downloadedTorrent()
+    {
+        // Step 1: Login
+        $login = Http::asForm()->post("{$this->baseUrl}/api/v2/auth/login", [
+            'username' => $this->username,
+            'password' => $this->password,
+        ]);
+
+        if ($login->body() !== 'Ok.') {
+            return view('jackett.download', ['error' => 'Login gagal ke qBittorrent: ' . $login->body(), 'torrents' => []]);
+        }
+
+        $sid = $login->cookies()->getCookieByName('SID')->getValue();
+
+        // Step 2: Panggil /api/v2/torrents/info untuk download yang sedang berlangsung
+        $response = Http::withHeaders([
+            'Cookie' => 'SID=' . $sid,
+        ])->get("{$this->baseUrl}/api/v2/torrents/info", [
+            'filter' => 'completed',
+        ]);
+
+        $torrents = $response->json();
+
+        return view('qbittorrent.downloaded', ['torrents' => $torrents, 'error' => null]);
     }
 
     public function refresh()
@@ -165,8 +195,6 @@ class QbittorrentController extends Controller
         return redirect()->route('jackett.downloadInfo')->with('success', 'Torrent berhasil di-pause.');
     }
 
-
-
     public function resume(Request $request)
     {
         $request->validate([
@@ -203,117 +231,6 @@ class QbittorrentController extends Controller
         }
 
         return redirect()->route('jackett.downloadInfo')->with('success', 'Torrent berhasil di-resume.');
-    }
-
-    public function convert(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'hash' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
-
-        $validated = $validator->validate();
-
-        // Step 1: Login ke qBittorrent
-        $login = Http::asForm()->post("{$this->baseUrl}/api/v2/auth/login", [
-            'username' => $this->username,
-            'password' => $this->password,
-        ]);
-
-        if ($login->body() !== 'Ok.') {
-            return back()->with('error', 'Login gagal ke qBittorrent: ' . $login->body());
-        }
-
-        $sid = $login->cookies()->getCookieByName('SID')->getValue();
-
-        // Step 2: Ambil semua torrent info
-        $response = Http::withHeaders([
-            'Cookie' => 'SID=' . $sid,
-        ])->get("{$this->baseUrl}/api/v2/torrents/info");
-
-        $torrents = json_decode($response->body(), true);
-
-        // Step 3: Filter torrent berdasarkan hash
-        $torrent = collect($torrents)->firstWhere('hash', $validated['hash']);
-
-        if (!$torrent) {
-            return back()->with('error', 'Torrent dengan hash tersebut tidak ditemukan.');
-        }
-
-        // Step 4: Cari data torrent di database
-        $dataTorrent = Torrent::where('name', $torrent['name'])->first();
-
-        if (!$dataTorrent) {
-            return back()->with('error', 'Data torrent tidak ditemukan di database.');
-        }
-
-        // Step 5: Cari file utama (video)
-        $downloadPath = $this->getMainFilePath(folderName: $torrent['content_path']);
-
-        $dataTorrent->update([
-            'download_path' => $downloadPath ? $downloadPath[0] : null,
-            'hash' => $torrent['hash'],
-            'status' => 'converting',
-        ]);
-
-        // Step 6: Dispatch job untuk konversi di background
-        ConvertToHlsJob::dispatch($dataTorrent);
-
-        return back()->with('success', 'Proses konversi HLS telah dimulai di background.');
-    }
-
-    public function getMainFilePath($folderName)
-    {
-        // Path dasar ke folder torrent
-        $folder = $folderName;
-
-        if (!is_dir($folder)) {
-            return []; // jika folder tidak ditemukan
-        }
-
-        $videoExtensions = ['mp4', 'mkv', 'avi', 'mov', 'wmv'];
-        $files = scandir($folder);
-        $videoFiles = [];
-
-        foreach ($files as $file) {
-            if ($file === '.' || $file === '..') continue;
-
-            $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-            if (in_array($ext, $videoExtensions)) {
-                // tambahkan path lengkap
-                $videoFiles[] = $folder . DIRECTORY_SEPARATOR . $file;
-            }
-        }
-
-        return $videoFiles;
-    }
-
-    public function convertToHls($inputPath, $outputFolder)
-    {
-        $outputPath = storage_path("app/public/hls/{$outputFolder}");
-
-        // Pastikan folder output ada
-        if (!file_exists($outputPath)) {
-            mkdir($outputPath, 0777, true);
-        }
-
-        $ffmpeg = \FFMpeg\FFMpeg::create();
-        $video = $ffmpeg->open($inputPath);
-
-        // Buat format HLS
-        $format = new \FFMpeg\Format\Video\X264('aac', 'libx264');
-        $format->setKiloBitrate(1500); // bitrate (sesuaikan kualitas)
-
-        // Simpan ke HLS (1 playlist + banyak segmen .ts)
-        $video->save(
-            new \FFMpeg\Format\Video\X264(),
-            "{$outputPath}/index.m3u8"
-        );
-
-        return true;
     }
 
 }

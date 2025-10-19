@@ -48,6 +48,23 @@ class ConvertToHlsJob implements ShouldQueue
             $outputPath
         );
 
+        // $content = Content::where('id', $this->torrent->content_id)->first();
+
+        // $omdb = new OmdbController();
+
+        // $omdbData = $omdb->search($content->name);
+
+        // $content->update([
+        //     'name' => $omdbData['Title'] ?? $content->name,
+        //     'title' => $omdbData['Title'] ?? $content->title,
+        //     'description' => $omdbData['Plot'] ?? $content->description,
+        //     'release_year' => isset($omdbData['Year']) ? (int)$omdbData['Year'] : $content->release_year,
+        //     'rating' => isset($omdbData['imdbRating']) && is_numeric($omdbData['imdbRating']) ? (float)$omdbData['imdbRating'] : $content->rating,
+        //     'duration' => $omdbData['Runtime'] ?? $content->duration,
+        //     'cover_image' => $omdbData['Poster'] ?? $content->cover_image,
+        //     'status' => 'available'
+        // ]);
+
         exec($cmd, $output, $returnVar);
 
         if ($returnVar !== 0) {
@@ -59,23 +76,6 @@ class ConvertToHlsJob implements ShouldQueue
         $this->torrent->update([
             'status' => 'converted',
             'download_path' => str_replace(storage_path('app/public/'), 'storage/', "{$outputPath}/index.m3u8"),
-        ]);
-
-        $content = Content::where('id', $this->torrent->content_id)->first();
-
-        $omdb = new OmdbController();
-
-        $omdbData = $omdb->search($content->name);
-
-        $content->update([
-            'name' => $omdbData['Title'] ?? $content->name,
-            'title' => $omdbData['Title'] ?? $content->title,
-            'description' => $omdbData['Plot'] ?? $content->description,
-            'release_year' => isset($omdbData['Year']) ? (int)$omdbData['Year'] : $content->release_year,
-            'rating' => isset($omdbData['imdbRating']) && is_numeric($omdbData['imdbRating']) ? (float)$omdbData['imdbRating'] : $content->rating,
-            'duration' => $omdbData['Runtime'] ?? $content->duration,
-            'cover_image' => $omdbData['Poster'] ?? $content->cover_image,
-            'status' => 'available'
         ]);
 
         Log::info("✅ Konversi HLS berhasil untuk: {$inputPath}");
