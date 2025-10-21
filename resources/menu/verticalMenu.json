@@ -26,7 +26,7 @@
       ]
     },
     {
-      "name": "Content Management",
+      "name": "Movie",
       "icon": "menu-icon icon-base bx bx-search-alt",
       "slug": "jackett",
       "submenu": [
@@ -34,16 +34,35 @@
           "url": "jackett",
           "name": "Movie",
           "slug": "jackett.index"
-        },
+        }
+      ]
+    },
+    {
+      "name": "Series",
+      "icon": "menu-icon icon-base bx bx-tv",
+      "slug": "sonarr",
+      "submenu": [
+        {
+          "url": "sonarr",
+          "name": "Search",
+          "slug": "sonarr.index"
+        }
+      ]
+    },
+    {
+      "name": "Download",
+      "icon": "menu-icon icon-base bx bx-cog",
+      "slug": "qbittorrent",
+      "submenu": [
         {
           "url": "qbittorrent",
           "name": "Download Info",
-          "slug": "jackett.downloadInfo"
+          "slug": "qbittorrent.downloadInfo"
         },
         {
           "url": "qbittorrent/downloadedTorrent",
           "name": "Downloaded Torrent",
-          "slug": "jackett.downloaded"
+          "slug": "qbittorrent.downloaded"
         }
       ]
     }

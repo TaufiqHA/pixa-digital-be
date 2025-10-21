@@ -46,6 +46,7 @@ use App\Http\Controllers\user_interface\TooltipsPopovers;
 use App\Http\Controllers\pages\AccountSettingsConnections;
 use App\Http\Controllers\pages\AccountSettingsNotifications;
 use App\Http\Controllers\authentications\ForgotPasswordBasic;
+use App\Http\Controllers\SonarrController;
 use App\Http\Controllers\user_interface\PaginationBreadcrumbs;
 
 // Main Page Route
@@ -134,3 +135,4 @@ require __DIR__ . '/jackett.php';
 require __DIR__ . '/qbittorrent.php';
 require __DIR__ . '/convert.php';
 require __DIR__ . '/radarr.php';
+require __DIR__ . '/sonarr.php';
