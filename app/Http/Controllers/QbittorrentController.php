@@ -173,7 +173,7 @@ class QbittorrentController extends Controller
             return back()->withErrors(['pause' => 'Gagal pause torrent: ' . $pause->body()]);
         }
 
-        return redirect()->route('jackett.downloadInfo')->with('success', 'Torrent berhasil di-pause.');
+        return redirect()->route('qbittorrent.downloadInfo')->with('success', 'Torrent berhasil di-pause.');
     }
 
     public function resume(Request $request)

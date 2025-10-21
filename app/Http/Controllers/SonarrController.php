@@ -64,7 +64,7 @@ class SonarrController extends Controller
             'qualityProfileId' => 1, // Default quality profile
             'titleSlug' => $data['slug'] ?? strtolower(str_replace(' ', '-', $data['title'] ?? 'unknown')),
             'images' => $data['images'] ?? [],
-            'path' => "/home/taufiq/Downloads/" . $data['title'], // Default download path
+            'path' => "/home/taufiq/Documents/KERJA/PixaDigital/backend/public/storage/series/" . $data['title'], // Default download path
             'monitored' => true,
             'addOptions' => [
                 'ignoreEpisodesWithFiles' => true,
